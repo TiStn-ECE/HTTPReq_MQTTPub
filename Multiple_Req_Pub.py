@@ -97,7 +97,7 @@ while True:
         }
         for url, dest in URL.items():
             myRequest(url, dest)
-        time.sleep(3)
+        time.sleep(300)
     except KeyboardInterrupt:
         print("Something Error!!")
         break
