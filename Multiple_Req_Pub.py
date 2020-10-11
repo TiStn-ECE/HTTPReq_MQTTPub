@@ -7,7 +7,7 @@ def on_publish(mqttc, obj, mid):
     print("mid: " + str(mid))
     pass
 
-def publishToBroker(jsonData, dest):
+def publishToBroker(jsonData, myAccessKey, dest):
     topic = "/oneM2M/req/access-key/antares-cse/json"
     payload = {
         "m2m:rqp": {
@@ -24,8 +24,10 @@ def publishToBroker(jsonData, dest):
         "ty": 4
         }
     }
+    topic = topic.replace("accessKey", myAccessKey)     #change access key
     jsonObject = json.dumps(payload, sort_keys=True, indent=4)
     data = json.loads(jsonObject)
+    data["m2m:rqp"]["fr"] = myAccessKey
     data["m2m:rqp"]["to"] = dest    #change destination device
     data["m2m:rqp"]["pc"]["m2m:cin"]["con"] = json.dumps(jsonData)  #change content
     print("Payload\n\n")
@@ -68,13 +70,14 @@ def converter(contentPayload):
                 jsonData[evomoValue] = float(value)
     return jsonData
 
-def myRequest(url, dest):
+def myRequest(myInput):
     head = {
     "X-M2M-Origin" : "access-key",
     "Content-Type" : "application/json;ty=4",
     "Accept" : "application/json"
     }
-    response = requests.get(url, headers=head)
+    head["X-M2M-Origin"] = myInput[1]
+    response = requests.get(myInput[0], headers=head)
     statusCode = response.status_code
     if(statusCode == 200):
         print("Status Code : OK")
@@ -82,21 +85,26 @@ def myRequest(url, dest):
         # print(data)
         contentPayload = json.loads(data["m2m:cin"]["con"])
         jsonData = converter(contentPayload)
-        publishToBroker(jsonData, dest)
-        # batt = dataFix['battery']
-        # humi = dataFix['humidity']
-        # jsonData = toJson(batt, humi)
-        # print(jsonData)
-        # print(response.text)
+        publishToBroker(jsonData, myInput[2], myInput[3])
 
 while True:
     try:
-        URL = {
-            "URL_1" : "Publish_Device_1(Destination_Payload)",
-            "URL_2" : "Publish_Device_2(Destination_Payload)"
+        myInput = {
+            "key1" : [
+                "URL1",
+                "accessKeyRequest1", 
+                "acessKeyPublish1", 
+                "destPayload1"
+                ],
+            "key2" : [
+                "URL1",
+                "accessKeyRequest2", 
+                "acessKeyPublish2", 
+                "destPayload2"
+                ]
         }
-        for url, dest in URL.items():
-            myRequest(url, dest)
+        for value in myInput.values():
+            myRequest(value)
         time.sleep(300)
     except KeyboardInterrupt:
         print("Something Error!!")
