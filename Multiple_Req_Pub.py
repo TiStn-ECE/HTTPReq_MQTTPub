@@ -97,7 +97,7 @@ while True:
                 "destPayload1"
                 ],
             "key2" : [
-                "URL1",
+                "URL2",
                 "accessKeyRequest2", 
                 "acessKeyPublish2", 
                 "destPayload2"
